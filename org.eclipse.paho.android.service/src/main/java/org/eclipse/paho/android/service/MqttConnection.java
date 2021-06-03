@@ -825,7 +825,7 @@ class MqttConnection implements MqttCallbackExtended {
 			} else {
 				// Using the new Automatic reconnect functionality.
 				// We can't force a disconnection, but we can speed one up
-				alarmPingSender.schedule(100);
+				alarmPingSender.schedule(24000);
 
 			}
 		} catch (Exception e) {

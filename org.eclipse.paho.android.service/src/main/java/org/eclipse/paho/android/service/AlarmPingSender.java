@@ -71,7 +71,15 @@ class AlarmPingSender implements MqttPingSender {
 		String action = MqttServiceConstants.PING_SENDER
 				+ comms.getClient().getClientId();
 		Log.d(TAG, "Register alarmreceiver to MqttService"+ action);
+		try{
+			service.unregisterReceiver(alarmReceiver);
+		}catch(IllegalArgumentException e){
+			Log.d(TAG, "unregisterReceiver alarmreceiver IllegalArgumentException");
+			//Ignore unregister errors.
+		}
+
 		service.registerReceiver(alarmReceiver, new IntentFilter(action));
+
 
 		pendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(
 				action), PendingIntent.FLAG_UPDATE_CURRENT);
@@ -85,18 +93,18 @@ class AlarmPingSender implements MqttPingSender {
 
 		Log.d(TAG, "Unregister alarmreceiver to MqttService"+comms.getClient().getClientId());
 		if(hasStarted){
-			if(pendingIntent != null){
+			/*if(pendingIntent != null){
 				// Cancel Alarm.
 				AlarmManager alarmManager = (AlarmManager) service.getSystemService(Service.ALARM_SERVICE);
 				alarmManager.cancel(pendingIntent);
-			}
+			}*/
 
 			hasStarted = false;
-			try{
+			/*try{
 				service.unregisterReceiver(alarmReceiver);
 			}catch(IllegalArgumentException e){
 				//Ignore unregister errors.			
-			}
+			}*/
 		}
 	}
 

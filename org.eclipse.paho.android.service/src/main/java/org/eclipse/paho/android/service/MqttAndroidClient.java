@@ -1643,4 +1643,19 @@ public class MqttAndroidClient extends BroadcastReceiver implements IMqttAsyncCl
             }
         }
     }
+
+    @Override
+    public boolean removeMessage(IMqttDeliveryToken token) throws MqttException {
+        return false;
+    }
+
+    @Override
+    public void reconnect() throws MqttException {
+
+    }
+
+    @Override
+    public int getInFlightMessageCount() {
+        return 0;
+    }
 }

@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -326,11 +327,27 @@ public class MqttAndroidClient extends BroadcastReceiver implements IMqttAsyncCl
         if (mqttService == null) { // First time - must bind to the service
             Intent serviceStartIntent = new Intent();
             serviceStartIntent.setClassName(myContext, SERVICE_NAME);
-            Object service = myContext.startService(serviceStartIntent);
-            if (service == null) {
-                IMqttActionListener listener = token.getActionCallback();
-                if (listener != null) {
-                    listener.onFailure(token, new RuntimeException("cannot start service " + SERVICE_NAME));
+            IMqttActionListener listener = token.getActionCallback();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && foregroundServiceNotification != null) {
+                serviceStartIntent.putExtra(
+                        MqttService.PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION,
+                        foregroundServiceNotification);
+                serviceStartIntent.putExtra(
+                        MqttService.PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION_ID,
+                        foregroundServiceNotificationId);
+                try {
+                    myContext.startForegroundService(serviceStartIntent);
+                } catch (Throwable t) {
+                    if (listener != null) {
+                        listener.onFailure(token, new RuntimeException("cannot start service " + SERVICE_NAME, t));
+                    }
+                }
+            } else {
+                Object service = myContext.startService(serviceStartIntent);
+                if (service == null) {
+                    if (listener != null) {
+                        listener.onFailure(token, new RuntimeException("cannot start service " + SERVICE_NAME));
+                    }
                 }
             }
 

@@ -16,6 +16,7 @@
 package org.eclipse.paho.android.service;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -246,6 +247,11 @@ public class MqttService extends Service implements MqttTraceHandler {
 
     // a way to pass ourself back to the activity
     private MqttServiceBinder mqttServiceBinder;
+
+    // names of the start service Intent extras for foreground service mode
+    static final String PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION_ID = "org.eclipse.paho.android.service.MqttService.FOREGROUND_SERVICE_NOTIFICATION_ID";
+    static final String PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION = "org.eclipse.paho.android.service.MqttService.FOREGROUND_SERVICE_NOTIFICATION";
+
 
     // mapping from client handle strings to actual client connections.
     private Map<String/* clientHandle */, MqttConnection/* client */> connections = new ConcurrentHashMap<>();
@@ -595,6 +601,14 @@ public class MqttService extends Service implements MqttTraceHandler {
         // run till explicitly stopped, restart when
         // process restarted
         registerBroadcastReceivers();
+
+        if (intent != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification foregroundServiceNotification
+                    = intent.getParcelableExtra(PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION);
+            if (foregroundServiceNotification != null)
+                startForeground(intent.getIntExtra(PAHO_MQTT_FOREGROUND_SERVICE_NOTIFICATION_ID, 1),
+                        foregroundServiceNotification);
+        }
 
         return START_STICKY;
     }

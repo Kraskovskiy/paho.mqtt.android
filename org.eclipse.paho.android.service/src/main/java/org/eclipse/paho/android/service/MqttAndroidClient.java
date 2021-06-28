@@ -16,6 +16,7 @@
  */
 package org.eclipse.paho.android.service;
 
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -103,6 +104,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements IMqttAsyncCl
     private boolean traceEnabled = false;
     private volatile boolean receiverRegistered = false;
     private volatile boolean bindedService = false;
+
+    // notification for Foreground Service
+    private int foregroundServiceNotificationId = 737271;
+    private Notification foregroundServiceNotification;
 
     /**
      * Constructor - create an MqttAndroidClient that can be used to communicate with an MQTT server on android
@@ -1491,6 +1496,19 @@ public class MqttAndroidClient extends BroadcastReceiver implements IMqttAsyncCl
                 registerReceiver(this);
             }
         }
+    }
+
+    /**
+     * If foregroundServiceNotification is not null at the time of
+     * MqttService start it will run in foreground mode. This method has no effect if
+     * Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+     *
+     * @param notification notification to be used when MqttService runs in foreground mode
+     * @param id           The identifier for foreground service notification
+     */
+    public void setForegroundServiceNotification(Notification notification, int id) {
+        foregroundServiceNotification = notification;
+        foregroundServiceNotificationId = id;
     }
 
     /**

@@ -5,9 +5,8 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 14
-        // TODO switch to 26 needs more work https://developer.android.com/about/versions/oreo/background.html
-        targetSdkVersion 24
+        minSdkVersion 21
+        targetSdkVersion 28
 
         testApplicationId "org.eclipse.paho.android.service.test"
     }
@@ -25,23 +24,6 @@ dependencies {
     implementation "com.android.support:support-v4:${rootProject.ext.supportLibVersion}"
 }
 
-android.libraryVariants.all { variant ->
-    task("generate${variant.name}Javadoc", type: Javadoc) {
-        doFirst {
-            ext.androidJar =
-                    "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-            classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
-        }
-        title = "$name $version API"
-        description "Generates Javadoc for $variant.name."
-        source = variant.javaCompileProvider
-        options.links("http://docs.oracle.com/javase/7/docs/api/")
-        options.links("http://d.android.com/reference/")
-        exclude '**/BuildConfig.java'
-        exclude '**/R.java'
-    }
-}
-
 // Generate Sources Jar
 task("generateSourcesJar", type: Jar) {
     from android.sourceSets.main.java.srcDirs
@@ -51,38 +33,4 @@ task("generateSourcesJar", type: Jar) {
 // Generate Plain Jar Version of library (good for legacy users)
 task("generateLibraryJar", type: Jar) {
     from("$buildDir/intermediates/classes/release")
-}
-
-// Generate Javadoc
-task("generateJavaDocJar", type: Jar, dependsOn: (rootProject.ext.serviceVersion.endsWith('-SNAPSHOT') ? 'generatedebugJavadoc' : 'generatereleaseJavadoc')) {
-    from("$buildDir/docs/javadoc")
-    classifier = 'javadoc'
-}
-
-publishing {
-    publications {
-        paho(MavenPublication) {
-            groupId 'org.eclipse.paho'
-            artifact generateSourcesJar
-            artifact generateLibraryJar
-            artifact generateJavaDocJar
-            artifact "$buildDir/outputs/aar/" + rootProject.ext.serviceArchivesBaseName + "-" + rootProject.ext.serviceVersion + ".aar"
-        }
-    }
-    repositories {
-        if (project.hasProperty('eclipseRepoUsername')) {
-            maven {
-                name 'eclipse'
-                url 'https://repo.eclipse.org/content/repositories/paho-' + (rootProject.ext.serviceVersion.endsWith('-SNAPSHOT') ? 'snapshots/' : 'releases/')
-                credentials {
-                    username eclipseRepoUsername
-                    password eclipseRepoPassword
-                }
-            }
-        } else {
-            maven {
-                url "$buildDir/repo"
-            }
-        }
-    }
 }

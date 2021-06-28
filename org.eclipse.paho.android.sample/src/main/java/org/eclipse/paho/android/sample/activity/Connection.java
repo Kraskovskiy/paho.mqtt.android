@@ -1,8 +1,13 @@
 package org.eclipse.paho.android.sample.activity;
 
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 import org.eclipse.paho.android.sample.R;
 import org.eclipse.paho.android.sample.internal.IReceivedMessageListener;
@@ -137,6 +142,7 @@ public class Connection {
         }
 
         MqttAndroidClient client = new MqttAndroidClient(context, uri, clientId);
+        client.setForegroundServiceNotification(buildNotification(context), 1234);
         return new Connection(clientHandle, clientId, host, port, context, client, tlsConnection);
     }
 
@@ -153,6 +159,21 @@ public class Connection {
         this.port = port;
         this.tlsConnection = tlsConnection;
         this.client = new MqttAndroidClient(context, uri, clientId);
+        client.setForegroundServiceNotification(buildNotification(context), 1234);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
+    private static Notification buildNotification(Context context) {
+        return new Notification.Builder(context)
+                .setGroup("foreground")
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.foreground_service))
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.paho_logo_full)
+                .setContentIntent(TaskStackBuilder.create(context)
+                        .addNextIntentWithParentStack(new Intent(context, MainActivity.class))
+                        .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT))
+                .build();
     }
 
     /**

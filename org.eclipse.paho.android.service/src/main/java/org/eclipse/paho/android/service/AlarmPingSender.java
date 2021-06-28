@@ -193,7 +193,7 @@ class AlarmPingSender implements MqttPingSender {
             }
 
             pingRunner = new PingAsyncTask();
-            pingRunner.execute(comms);
+            pingRunner.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, comms);
 
             if (wakelock.isHeld()) {
                 wakelock.release();
